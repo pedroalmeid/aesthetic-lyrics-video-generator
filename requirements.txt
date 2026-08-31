@@ -1,2 +1,3 @@
-stable-whisper
+openai-whisper
+stable-ts
 pillow

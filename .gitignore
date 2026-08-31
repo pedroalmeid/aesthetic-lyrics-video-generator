@@ -1,0 +1,69 @@
+# ==========================================
+# Input & Output Media Files (Keep folder structure)
+# ==========================================
+input/audio/*
+!input/audio/.gitkeep
+
+input/img/*
+!input/img/.gitkeep
+
+input/lyrics/*
+!input/lyrics/.gitkeep
+
+output/*
+!output/.gitkeep
+
+# ==========================================
+# Temporary Render & Processing Artifacts
+# ==========================================
+temp_frames/
+*.ass
+*.srt
+
+# ==========================================
+# AI / Whisper Downloaded Model Weights & Caches
+# ==========================================
+.cache/
+~/.cache/whisper/
+models/
+*.pt
+
+# ==========================================
+# Python Artifacts
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# ==========================================
+# IDEs & System Files
+# ==========================================
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+*.swo
