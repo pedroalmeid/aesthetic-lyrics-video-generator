@@ -10,10 +10,10 @@ LANGUAGE = "en"
 # Video dimensions (3:4 vertical aspect ratio)
 WIDTH = 1080
 HEIGHT = 1440
-FPS = 3  # Images shown per second (ultra-fast slide effect)
+FPS = 2  # Images shown per second (ultra-fast slide effect)
 
 # Visual styling
-DARK_OVERLAY_OPACITY = 0.22  # Black overlay opacity on images
+DARK_OVERLAY_OPACITY = 0.3  # Black overlay opacity on images
 
 FONTS_DIR = "fonts"
 FONT_NAME = "TikTok Sans SemiBold"
