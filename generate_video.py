@@ -7,28 +7,69 @@ import stable_whisper
 # Language for lyrics alignment (e.g. "en", "pt", "es")
 LANGUAGE = "en"
 
-# Video dimensions (3:4 vertical aspect ratio)
+# Video dimensions
 WIDTH = 1080
-HEIGHT = 1440
-FPS = 2  # Images shown per second (ultra-fast slide effect)
+HEIGHT = 1920
+FPS = 3  # Images shown per second (ultra-fast slide effect)
 
 # Visual styling
-DARK_OVERLAY_OPACITY = 0.3  # Black overlay opacity on images
+DARK_OVERLAY_OPACITY = 0.28  # Black overlay opacity on images
 
 FONTS_DIR = "fonts"
 FONT_NAME = "TikTok Sans SemiBold"
-FONT_SIZE = 15
+FONT_SIZE = 17
+# Subtitle color: Hex code (e.g. "#FFFFFF", "#FFCC00") or ASS format "&H00BBGGRR"
+TEXT_COLOR = "#FFFEE0"
+# Subtitle text case: "original", "lowercase", or "uppercase"
+TEXT_CASE = "lowercase"
 
 # Subtitle timing offset in seconds
 # Negative value advances the text so it appears slightly before the vocals (e.g. -0.4s)
-LYRICS_OFFSET = -0.4
-
+LYRICS_OFFSET = -0.3
 # Directory configurations
 INPUT_AUDIO_DIR = "input/audio"
 INPUT_IMG_DIR = "input/img"
 INPUT_LYRICS_DIR = "input/lyrics"
 OUTPUT_DIR = "output"
 TEMP_DIR = "temp_frames"
+
+
+def format_text_case(text: str, case: str) -> str:
+    """Formats text according to the desired casing: 'lowercase', 'uppercase', or 'original'."""
+    case = case.lower()
+    if case == "lowercase":
+        return text.lower()
+    elif case == "uppercase":
+        return text.upper()
+    return text
+
+
+def color_to_ass_hex(color_str: str) -> str:
+    """
+    Converts a color string (HEX like '#RRGGBB' / 'RRGGBB' or ASS '&HAABBGGRR')
+    into SSA/ASS color format (&HAABBGGRR). Defaults alpha to 00 (fully opaque).
+    """
+    cleaned = color_str.strip()
+    if cleaned.startswith("&H") or cleaned.startswith("&h"):
+        return cleaned.upper()
+
+    cleaned = cleaned.lstrip("#")
+    if len(cleaned) == 6:
+        # Standard RGB hex -> convert to ASS &H00BBGGRR
+        r = cleaned[0:2]
+        g = cleaned[2:4]
+        b = cleaned[4:6]
+        return f"&H00{b}{g}{r}".upper()
+    elif len(cleaned) == 8:
+        # RGBA hex (#RRGGBBAA) -> convert to ASS &HAABBGGRR
+        r = cleaned[0:2]
+        g = cleaned[2:4]
+        b = cleaned[4:6]
+        a = cleaned[6:8]
+        return f"&H{a}{b}{g}{r}".upper()
+    
+    # Return as-is or fallback if not matching standard hex
+    return cleaned
 
 
 def get_first_file(directory: str, extensions: tuple) -> str:
@@ -55,6 +96,8 @@ def align_lyrics(audio_path: str, lyrics_path: str, subtitles_path: str):
     with open(lyrics_path, "r", encoding="utf-8") as f:
         lyrics = f.read()
 
+    lyrics = format_text_case(lyrics, TEXT_CASE)
+
     model = stable_whisper.load_model("base")
     # original_split=True guarantees that each line from lyrics.txt is treated as an indivisible subtitle unit
     aligned_result = model.align(audio_path, lyrics, language=LANGUAGE, original_split=True)
@@ -69,6 +112,7 @@ def align_lyrics(audio_path: str, lyrics_path: str, subtitles_path: str):
 
 def prepare_frames(images_dir: str, target_count: int, temp_dir: str):
     print("[2/4] Processing images into 3:4 frames...")
+    print(f"[2/4] Processing images into {WIDTH}x{HEIGHT} frames...")
     os.makedirs(temp_dir, exist_ok=True)
 
     extensions = ("*.jpg", "*.jpeg", "*.png", "*.webp")
@@ -96,12 +140,13 @@ def prepare_frames(images_dir: str, target_count: int, temp_dir: str):
 
 def render_video(audio_path: str, subtitles_path: str, output_path: str):
     print("[3/4] Rendering video with FFmpeg...")
+    ass_color = color_to_ass_hex(TEXT_COLOR)
     # Alignment=10 centers text vertically and horizontally in SSA/ASS
     # BorderStyle=1, Outline=0, Shadow=0 removes any border or shadow
     subtitle_style = (
         f"Fontname={FONT_NAME},"
         f"FontSize={FONT_SIZE},"
-        "PrimaryColour=&H00FFFFFF,"
+        f"PrimaryColour={ass_color},"
         "OutlineColour=&H00000000,"
         "BorderStyle=1,"
         "Outline=0,"
